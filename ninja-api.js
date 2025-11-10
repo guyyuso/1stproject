@@ -15,8 +15,8 @@ const http = require('http');
 
 // Configuration
 const config = {
-  clientId: 'FLFI6ANM2S7MG4AEOTA5',
-  clientSecret: '47jn6gqcb6r402g48hmblcepcb642a5e553dempl',
+  clientId: 'H9E-VrYBPxfV1_zf17IExUgs_o4',
+  clientSecret: 'k-Fv9NbgfT9ZDYkbR-19wHzn1ot2RnU975AfAOo8V-HVB_7PyYRAxg',
   baseUrl: 'comda.rmmservice.eu',
   tokenEndpoint: '/ws/oauth/token',
   apiEndpoints: {

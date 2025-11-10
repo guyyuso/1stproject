@@ -16,8 +16,8 @@ from typing import Optional, Dict, Any
 
 # Configuration
 CONFIG = {
-    'client_id': 'FLFI6ANM2S7MG4AEOTA5',
-    'client_secret': '47jn6gqcb6r402g48hmblcepcb642a5e553dempl',
+    'client_id': 'H9E-VrYBPxfV1_zf17IExUgs_o4',
+    'client_secret': 'k-Fv9NbgfT9ZDYkbR-19wHzn1ot2RnU975AfAOo8V-HVB_7PyYRAxg',
     'base_url': 'https://comda.rmmservice.eu',
     'token_endpoint': '/ws/oauth/token',
     'api_endpoints': {

@@ -1,0 +1,35 @@
+[
+  {
+    "id": 513,
+    "uid": "d183bd6a-f35b-4bf0-a676-08bb8d995ef3",
+    "organizationId": 2,
+    "locationId": 2,
+    "nodeClass": "WINDOWS_WORKSTATION",
+    "nodeRoleId": 201,
+    "rolePolicyId": 2,
+    "approvalStatus": "APPROVED",
+    "offline": true,
+    "systemName": "GUYY-TEST",
+    "dnsName": "guyy-test.comda.co.il",
+    "created": 1724834546.571997,
+    "lastContact": 1751885191.57,
+    "lastUpdate": 1751885191.57
+  },
+  {
+    "id": 577,
+    "uid": "0c59f91e-b1c6-4e46-825b-054bd95799f0",
+    "organizationId": 2,
+    "locationId": 2,
+    "nodeClass": "WINDOWS_WORKSTATION",
+    "nodeRoleId": 202,
+    "rolePolicyId": 2,
+    "policyId": 50,
+    "approvalStatus": "APPROVED",
+    "offline": false,
+    "systemName": "IT-GUYY",
+    "dnsName": "IT-guyy.comda.co.il",
+    "created": 1743682782.628392,
+    "lastContact": 1762783467.197,
+    "lastUpdate": 1762783467.197
+  }
+]

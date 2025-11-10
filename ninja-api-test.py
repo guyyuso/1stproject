@@ -8,8 +8,8 @@ import requests
 import json
 
 # Configuration for your specific instance
-CLIENT_ID = 'FLFI6ANM2S7MG4AEOTA5'
-CLIENT_SECRET = '47jn6gqcb6r402g48hmblcepcb642a5e553dempl'
+CLIENT_ID = 'H9E-VrYBPxfV1_zf17IExUgs_o4'
+CLIENT_SECRET = 'k-Fv9NbgfT9ZDYkbR-19wHzn1ot2RnU975AfAOo8V-HVB_7PyYRAxg'
 BASE_URL = 'https://comda.rmmservice.eu'
 
 def get_access_token():
