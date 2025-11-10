@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NinjaRMM API Integration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 25px;
+    }
+
+    .section h2 {
+      color: #667eea;
+      font-size: 18px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .info-value {
+      color: #333;
+      word-break: break-all;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .status.loading {
+      background: #fff3cd;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+
+    .result-box {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 15px;
+      overflow-x: auto;
+      max-height: 400px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .result-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #856404;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .endpoint-selector {
+      margin-bottom: 15px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NinjaRMM API Integration</h1>
+    <p class="subtitle">OAuth 2.0 Authentication & API Testing</p>
+
+    <div class="section">
+      <h2>Configuration</h2>
+      <div class="info-grid">
+        <div class="info-label">Client ID:</div>
+        <div class="info-value" id="clientId">FLFI6ANM2S7MG4AEOTA5</div>
+        <div class="info-label">Client Secret:</div>
+        <div class="info-value" id="clientSecret">47jn6gqcb6r402g48hmblcepcb642a5e553dempl</div>
+        <div class="info-label">Base URL:</div>
+        <div class="info-value" id="baseUrl">https://comda.rmmservice.eu</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Authentication</h2>
+      <button id="getTokenBtn" onclick="getAccessToken()">Get Access Token</button>
+      <div id="tokenStatus"></div>
+      <div id="tokenResult" class="hidden result-box"></div>
+    </div>
+
+    <div class="section" id="apiSection" class="hidden">
+      <h2>API Endpoints</h2>
+      <div class="endpoint-selector">
+        <label for="endpointSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Select Endpoint:</label>
+        <select id="endpointSelect">
+          <option value="/v2/organizations">Get Organizations</option>
+          <option value="/v2/devices">Get Devices</option>
+          <option value="/v2/device-roles">Get Device Roles</option>
+          <option value="/v2/activities">Get Activities</option>
+          <option value="/v2/queries">Get Queries</option>
+        </select>
+      </div>
+      <button id="callApiBtn" onclick="callApi()" disabled>Call API Endpoint</button>
+      <div id="apiStatus"></div>
+      <div id="apiResult" class="hidden result-box"></div>
+    </div>
+  </div>
+
+  <script>
+    let accessToken = null;
+    const clientId = 'FLFI6ANM2S7MG4AEOTA5';
+    const clientSecret = '47jn6gqcb6r402g48hmblcepcb642a5e553dempl';
+    const baseUrl = 'https://comda.rmmservice.eu';
+
+    async function getAccessToken() {
+      const statusDiv = document.getElementById('tokenStatus');
+      const resultDiv = document.getElementById('tokenResult');
+      const getTokenBtn = document.getElementById('getTokenBtn');
+
+      statusDiv.innerHTML = '<div class="status loading"><span class="spinner"></span>Requesting access token...</div>';
+      resultDiv.classList.add('hidden');
+      getTokenBtn.disabled = true;
+
+      try {
+        // OAuth 2.0 Client Credentials Flow
+        const tokenUrl = `${baseUrl}/ws/oauth/token`;
+
+        const response = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            grant_type: 'client_credentials',
+            client_id: clientId,
+            client_secret: clientSecret,
+            scope: 'monitoring management'
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.access_token) {
+          accessToken = data.access_token;
+          statusDiv.innerHTML = '<div class="status success">✓ Successfully obtained access token!</div>';
+          resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+          resultDiv.classList.remove('hidden');
+
+          // Enable API section
+          document.getElementById('apiSection').classList.remove('hidden');
+          document.getElementById('callApiBtn').disabled = false;
+        } else {
+          throw new Error(data.error_description || data.error || 'Failed to get access token');
+        }
+      } catch (error) {
+        statusDiv.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+        console.error('Token Error:', error);
+      } finally {
+        getTokenBtn.disabled = false;
+      }
+    }
+
+    async function callApi() {
+      const statusDiv = document.getElementById('apiStatus');
+      const resultDiv = document.getElementById('apiResult');
+      const callApiBtn = document.getElementById('callApiBtn');
+      const endpoint = document.getElementById('endpointSelect').value;
+
+      if (!accessToken) {
+        statusDiv.innerHTML = '<div class="status error">✗ Please get an access token first!</div>';
+        return;
+      }
+
+      statusDiv.innerHTML = `<div class="status loading"><span class="spinner"></span>Calling API endpoint: ${endpoint}</div>`;
+      resultDiv.classList.add('hidden');
+      callApiBtn.disabled = true;
+
+      try {
+        const apiUrl = `${baseUrl}${endpoint}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          statusDiv.innerHTML = `<div class="status success">✓ API call successful! Status: ${response.status}</div>`;
+          resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+          resultDiv.classList.remove('hidden');
+        } else {
+          throw new Error(data.error || data.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        statusDiv.innerHTML = `<div class="status error">✗ Error: ${error.message}</div>`;
+        console.error('API Error:', error);
+      } finally {
+        callApiBtn.disabled = false;
+      }
+    }
+
+    // Auto-authenticate on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('NinjaRMM API Integration Ready');
+      console.log('Click "Get Access Token" to begin authentication');
+    });
+  </script>
+</body>
+</html>
