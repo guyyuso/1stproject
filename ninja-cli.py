@@ -8,6 +8,7 @@ A unified CLI tool for managing computers via NinjaRMM API.
 Usage:
     ninja-cli.py search <name>           - Search for computers by name
     ninja-cli.py restart <name>          - Restart a computer
+    ninja-cli.py disable-bluetooth <name> - Disable Bluetooth on a computer
     ninja-cli.py list                    - List all computers
     ninja-cli.py list-guy                - List computers with 'guy' in name
     ninja-cli.py info <name>             - Get detailed info about a computer
@@ -16,6 +17,7 @@ Usage:
 Examples:
     ninja-cli.py search "IT-GREGORYR"
     ninja-cli.py restart "IT-GREGORYR"
+    ninja-cli.py disable-bluetooth "IT-GREGORYR"
     ninja-cli.py list-guy
     ninja-cli.py info "daniel 2019"
 """
@@ -149,6 +151,48 @@ class NinjaAPI:
             print(f'❌ Error: {str(e)}\n')
             return False
 
+    def run_script(self, device_id: int, device_name: str, script: str, script_type: str = 'powershell') -> bool:
+        """Run a script on a device"""
+        if not self.access_token:
+            print('❌ Not authenticated.')
+            return False
+
+        print(f'📜 Sending {script_type} script to: {device_name} (ID: {device_id})')
+
+        # Try multiple possible endpoint formats
+        endpoints = [
+            f'/v2/device/{device_id}/script/run',
+            f'/v2/devices/{device_id}/script/run',
+            f'/v2/device/{device_id}/scripting/run',
+        ]
+
+        headers = {
+            'Authorization': f'Bearer {self.access_token}',
+            'Content-Type': 'application/json'
+        }
+
+        # Try different payload formats
+        payloads = [
+            {'type': script_type, 'script': script},
+            {'scriptType': script_type, 'scriptContent': script},
+            {'language': script_type, 'content': script}
+        ]
+
+        for endpoint in endpoints:
+            script_url = f'{self.config["base_url"]}{endpoint}'
+            for payload in payloads:
+                try:
+                    response = requests.post(script_url, headers=headers, json=payload, timeout=30)
+                    if response.status_code in [200, 201, 202, 204]:
+                        print(f'✅ Script execution initiated!')
+                        print(f'   Status Code: {response.status_code}\n')
+                        return True
+                except requests.exceptions.RequestException:
+                    continue
+
+        print(f'❌ Script execution failed on all endpoints.\n')
+        return False
+
 
 def print_device_summary(device: Dict[Any, Any], index: int = None):
     """Print device summary in one line"""
@@ -265,6 +309,80 @@ def cmd_restart(api: NinjaAPI, computer_name: str):
     return 0 if success else 1
 
 
+def cmd_disable_bluetooth(api: NinjaAPI, computer_name: str):
+    """Disable Bluetooth on a computer"""
+    print(f'🎯 Target: {computer_name}\n')
+
+    # PowerShell script to disable Bluetooth
+    disable_bt_script = """
+# Disable Bluetooth on Windows
+Write-Host "Disabling Bluetooth..."
+
+# Stop and disable Bluetooth Support Service
+$service = Get-Service -Name "bthserv" -ErrorAction SilentlyContinue
+if ($service) {
+    Stop-Service -Name "bthserv" -Force -ErrorAction SilentlyContinue
+    Set-Service -Name "bthserv" -StartupType Disabled -ErrorAction SilentlyContinue
+    Write-Host "Bluetooth Support Service disabled"
+}
+
+# Disable Bluetooth radios via Device Manager
+$bluetoothRadios = Get-PnpDevice | Where-Object {
+    $_.Class -eq "Bluetooth" -or
+    $_.FriendlyName -like "*Bluetooth*"
+} | Where-Object {$_.Status -eq "OK"}
+
+if ($bluetoothRadios) {
+    foreach ($radio in $bluetoothRadios) {
+        Disable-PnpDevice -InstanceId $radio.InstanceId -Confirm:$false -ErrorAction SilentlyContinue
+        Write-Host "Disabled: $($radio.FriendlyName)"
+    }
+}
+
+Write-Host "Bluetooth has been disabled"
+"""
+
+    devices = api.get_devices()
+    if not devices:
+        return 1
+
+    results = api.search_devices(devices, computer_name)
+
+    if not results:
+        print(f'❌ Computer "{computer_name}" not found.\n')
+        return 1
+
+    if len(results) > 1:
+        print(f'⚠️  Multiple computers found matching "{computer_name}":\n')
+        for idx, device in enumerate(results, 1):
+            print_device_summary(device, idx)
+        print('\n❌ Please be more specific.\n')
+        return 1
+
+    device = results[0]
+    device_id = device.get('id')
+    system_name = device.get('systemName', 'N/A')
+    online = device.get('online', False)
+
+    print_device_summary(device)
+    print()
+
+    if not online:
+        print('⚠️  WARNING: Device is offline.')
+        print('   Script may not execute until device comes online.\n')
+
+    success = api.run_script(device_id, system_name, disable_bt_script)
+
+    if success:
+        print('✅ SUCCESS: Bluetooth disable command sent!')
+        print('   A system restart may be required for full effect.\n')
+        return 0
+    else:
+        print('⚠️  NOTE: Script execution via API may not be available.')
+        print('   You can manually disable Bluetooth via NinjaRMM web interface.\n')
+        return 1
+
+
 def cmd_list(api: NinjaAPI):
     """List all computers"""
     devices = api.get_devices()
@@ -362,6 +480,13 @@ def main():
             return 1
         computer_name = ' '.join(sys.argv[2:])
         return cmd_restart(api, computer_name)
+
+    elif command == 'disable-bluetooth':
+        if len(sys.argv) < 3:
+            print('❌ Usage: ninja-cli.py disable-bluetooth <name>\n')
+            return 1
+        computer_name = ' '.join(sys.argv[2:])
+        return cmd_disable_bluetooth(api, computer_name)
 
     elif command == 'list':
         return cmd_list(api)
