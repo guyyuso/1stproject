@@ -18,8 +18,8 @@ from typing import Optional, List, Dict, Any
 
 # Configuration
 CONFIG = {
-    'client_id': 'FLFI6ANM2S7MG4AEOTA5',
-    'client_secret': '47jn6gqcb6r402g48hmblcepcb642a5e553dempl',
+    'client_id': 'J0CpD5xrF5WKV2qo50lxNbkUZ5k',
+    'client_secret': 'VOwtkv-xVvO5HoZcIbncQxI-QIU4-OVC27DTFTHnZfJEGojG38lrbg',
     'base_url': 'https://comda.rmmservice.eu',
     'token_endpoint': '/ws/oauth/token',
     'devices_endpoint': '/v2/devices',
